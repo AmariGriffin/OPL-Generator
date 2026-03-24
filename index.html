@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>OPL Generator · eBay PM Tools</title>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #f4f6f9; font-family: 'Inter', sans-serif; color: #1a1a2e; }
+
+.header {
+  background: #0a0a0f;
+  padding: 0 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 3px solid #F5AF02;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  height: 64px;
+}
+.header-logo { font-family: 'Chakra Petch', monospace; font-size: 20px; font-weight: 700; color: white; }
+.header-logo span { color: #F5AF02; }
+.header-badge { background: #0064D2; color: white; font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 4px; letter-spacing: 1px; text-transform: uppercase; margin-left: 10px; }
+.header-right { font-size: 12px; color: #6b7280; }
+
+.main { max-width: 900px; margin: 0 auto; padding: 40px 24px 80px; }
+.page-title { font-family: 'Chakra Petch', monospace; font-size: 30px; font-weight: 700; color: #0a0a0f; margin-bottom: 6px; }
+.page-subtitle { color: #6b7280; font-size: 14px; margin-bottom: 28px; line-height: 1.6; }
+.divider { height: 3px; background: linear-gradient(to right, #0064D2, #86B817, #F5AF02, #E53238); border-radius: 2px; margin-bottom: 28px; }
+
+.card { background: white; border-radius: 12px; padding: 28px 32px; margin-bottom: 20px; border: 1px solid #e5e7eb; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+.card-title { font-family: 'Chakra Petch', monospace; font-size: 13px; font-weight: 700; color: #0a0a0f; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 18px; display: flex; align-items: center; gap: 10px; }
+.card-title-num { width: 26px; height: 26px; background: #0064D2; color: white; border-radius: 50%; font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+.mode-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+.mode-tab { padding: 8px 18px; border-radius: 8px; border: 2px solid #e5e7eb; background: white; font-size: 13px; font-weight: 600; cursor: pointer; color: #6b7280; transition: all 0.15s; font-family: 'Inter', sans-serif; }
+.mode-tab.active { border-color: #0064D2; background: #0064D2; color: white; }
+
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-group.full { grid-column: 1 / -1; }
+label { font-size: 11px; font-weight: 600; color: #374151; text-transform: uppercase; letter-spacing: 0.5px; }
+.required { color: #E53238; }
+input, textarea, select { padding: 9px 13px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; font-family: 'Inter', sans-serif; color: #1a1a2e; transition: border-color 0.15s; outline: none; background: white; width: 100%; }
+input:focus, textarea:focus { border-color: #0064D2; }
+textarea { resize: vertical; min-height: 100px; line-height: 1.6; }
+
+.steps-list { display: flex; flex-direction: column; gap: 12px; }
+.step-row { padding: 14px; background: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb; }
+.step-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.step-num-label { font-size: 11px; font-weight: 700; color: #0064D2; text-transform: uppercase; letter-spacing: 1px; }
+.step-fields { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.remove-btn { background: none; border: none; cursor: pointer; color: #9ca3af; font-size: 20px; padding: 4px 8px; border-radius: 6px; line-height: 1; transition: color 0.15s; }
+.remove-btn:hover { color: #E53238; }
+.add-btn { margin-top: 10px; padding: 10px 18px; background: white; border: 2px dashed #d1d5db; border-radius: 8px; font-size: 13px; font-weight: 600; color: #6b7280; cursor: pointer; width: 100%; transition: all 0.15s; font-family: 'Inter', sans-serif; }
+.add-btn:hover { border-color: #0064D2; color: #0064D2; }
+
+.contacts-grid { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px; align-items: flex-end; margin-bottom: 10px; }
+
+.generate-btn { width: 100%; padding: 15px; background: #0064D2; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 700; font-family: 'Chakra Petch', monospace; letter-spacing: 0.5px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px; }
+.generate-btn:hover:not(:disabled) { background: #0052b3; }
+.generate-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.hint { font-size: 12px; color: #9ca3af; text-align: center; margin-top: 10px; }
+
+.spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.error-box { background: #fef2f2; border: 1px solid #fca5a5; border-radius: 8px; padding: 14px 18px; color: #991b1b; font-size: 14px; margin-top: 14px; }
+
+.preview-card { background: white; border-radius: 12px; border: 2px solid #86B817; overflow: hidden; margin-bottom: 20px; }
+.preview-header { background: #86B817; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; }
+.preview-header-title { font-family: 'Chakra Petch', monospace; font-size: 13px; font-weight: 700; color: white; text-transform: uppercase; }
+.download-btn { padding: 8px 20px; background: white; border: none; border-radius: 6px; font-size: 13px; font-weight: 700; color: #86B817; cursor: pointer; font-family: 'Chakra Petch', monospace; transition: all 0.15s; }
+.download-btn:hover { background: #f0fdf4; }
+.preview-body { padding: 28px 32px; }
+.opl-title { font-family: 'Chakra Petch', monospace; font-size: 22px; font-weight: 700; color: #0a0a0f; margin-bottom: 4px; }
+.opl-meta { font-size: 12px; color: #6b7280; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 16px; }
+.opl-section { margin-bottom: 22px; }
+.opl-section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #0064D2; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 2px solid #e5e7eb; }
+.opl-step { display: flex; gap: 14px; margin-bottom: 12px; padding: 14px; background: #f9fafb; border-radius: 8px; border-left: 4px solid #0064D2; }
+.opl-step-num { width: 28px; height: 28px; background: #0064D2; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+.opl-step-action { font-weight: 600; font-size: 14px; color: #1a1a2e; margin-bottom: 3px; }
+.opl-step-system { font-size: 11px; font-weight: 600; color: #0064D2; background: #eff6ff; padding: 2px 8px; border-radius: 4px; display: inline-block; margin-bottom: 4px; }
+.opl-step-detail { font-size: 13px; color: #4b5563; line-height: 1.5; margin-top: 4px; }
+.warning-inline { margin-top: 8px; background: #fffbeb; border-left: 4px solid #F5AF02; padding: 8px 12px; border-radius: 0 6px 6px 0; font-size: 13px; color: #92400e; }
+.screenshot-box { margin-top: 8px; border: 2px dashed #d1d5db; border-radius: 6px; padding: 8px 12px; font-size: 12px; color: #9ca3af; }
+.warning-box { background: #fffbeb; border-left: 4px solid #F5AF02; padding: 10px 14px; border-radius: 0 6px 6px 0; font-size: 13px; color: #92400e; margin-bottom: 8px; }
+.contact-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.contact-table th { text-align: left; padding: 8px 12px; background: #f3f4f6; font-weight: 600; color: #374151; border: 1px solid #e5e7eb; }
+.contact-table td { padding: 8px 12px; border: 1px solid #e5e7eb; color: #4b5563; }
+
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div style="display:flex;align-items:center;gap:6px;">
+    <div class="header-logo">OPL <span>Generator</span></div>
+    <div class="header-badge">eBay PM Tools</div>
+  </div>
+  <div class="header-right">One Point Lesson Builder · AI-Powered</div>
+</header>
+
+<main class="main">
+  <h1 class="page-title">Build a One Point Lesson</h1>
+  <p class="page-subtitle">Turn your process knowledge into a reusable, shareable document — before it's lost.<br>Input your steps below and Claude will structure it into a polished OPL you can download as a Word doc.</p>
+  <div class="divider"></div>
+
+  <div class="card">
+    <div class="card-title"><div class="card-title-num">1</div> Choose Input Method</div>
+    <div class="mode-tabs">
+      <button class="mode-tab active" id="tab-form" onclick="setMode('form')">📋 Step-by-Step Form</button>
+      <button class="mode-tab" id="tab-notes" onclick="setMode('notes')">📝 Paste Raw Notes</button>
+    </div>
+
+    <div id="notes-mode" class="hidden">
+      <div class="form-group">
+        <label>Your Raw Process Notes <span class="required">*</span></label>
+        <textarea id="raw-notes" rows="10" placeholder="Paste your notes here in any format. Example:&#10;&#10;PO Process for [Program Name]&#10;1. Go to Ariba, log in with SSO&#10;2. Search for vendor — search by parent company name, not vendor name (learned this the hard way)&#10;3. Click New PO Request...&#10;&#10;Common issues: Approval gets stuck if cost center is wrong. Double-check with finance partner first."></textarea>
+      </div>
+    </div>
+
+    <div id="form-mode">
+      <div class="form-grid" style="margin-bottom:20px;">
+        <div class="form-group">
+          <label>Process Name <span class="required">*</span></label>
+          <input id="f-process" placeholder="e.g. Purchase Order Submission" />
+        </div>
+        <div class="form-group">
+          <label>Program</label>
+          <input id="f-program" placeholder="e.g. Seller Experience Initiative" />
+        </div>
+        <div class="form-group">
+          <label>Department</label>
+          <input id="f-dept" placeholder="e.g. Trust &amp; Safety PMO" />
+        </div>
+        <div class="form-group">
+          <label>Frequency</label>
+          <input id="f-freq" placeholder="e.g. Annually, per fiscal year" />
+        </div>
+        <div class="form-group full">
+          <label>Process Objective</label>
+          <input id="f-obj" placeholder="What is this process trying to accomplish?" />
+        </div>
+      </div>
+
+      <div class="card-title" style="margin-bottom:12px;font-size:12px;">Process Steps</div>
+      <div class="steps-list" id="steps-container"></div>
+      <button class="add-btn" onclick="addStep()">+ Add Another Step</button>
+
+      <div class="card-title" style="margin-top:24px;margin-bottom:12px;font-size:12px;">Who to Contact If Stuck</div>
+      <div id="contacts-container"></div>
+      <button class="add-btn" onclick="addContact()">+ Add Contact</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><div class="card-title-num">2</div> Generate OPL</div>
+    <button class="generate-btn" id="gen-btn" onclick="generate()">
+      ⚡ Generate One Point Lesson
+    </button>
+    <p class="hint" id="gen-hint">Add a process name and at least one step to continue.</p>
+    <div class="error-box hidden" id="error-box"></div>
+  </div>
+
+  <div class="preview-card hidden" id="preview-card">
+    <div class="preview-header">
+      <div class="preview-header-title">✓ OPL Generated — Preview</div>
+      <button class="download-btn" onclick="downloadDocx()">⬇ Download .docx</button>
+    </div>
+    <div class="preview-body" id="preview-body"></div>
+  </div>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.umd.min.js"></script>
+<script>
+let mode = 'form';
+let steps = [];
+let contacts = [];
+let stepIdCounter = 0;
+let contactIdCounter = 0;
+let currentOpl = null;
+
+function setMode(m) {
+  mode = m;
+  document.getElementById('tab-form').classList.toggle('active', m === 'form');
+  document.getElementById('tab-notes').classList.toggle('active', m === 'notes');
+  document.getElementById('form-mode').classList.toggle('hidden', m === 'notes');
+  document.getElementById('notes-mode').classList.toggle('hidden', m === 'form');
+  updateHint();
+}
+
+function addStep() {
+  const id = stepIdCounter++;
+  steps.push({ id });
+  renderSteps();
+}
+
+function removeStep(id) {
+  steps = steps.filter(s => s.id !== id);
+  renderSteps();
+}
+
+function renderSteps() {
+  const container = document.getElementById('steps-container');
+  container.innerHTML = '';
+  steps.forEach((s, i) => {
+    const div = document.createElement('div');
+    div.className = 'step-row';
+    div.innerHTML = `
+      <div class="step-header">
+        <div class="step-num-label">Step ${i + 1}</div>
+        <button class="remove-btn" onclick="removeStep(${s.id})">×</button>
+      </div>
+      <div class="step-fields">
+        <div class="form-group">
+          <label>Action <span class="required">*</span></label>
+          <input placeholder="What do you do?" id="step-action-${s.id}" oninput="updateHint()" />
+        </div>
+        <div class="form-group">
+          <label>System / Website</label>
+          <input placeholder="e.g. Ariba, Coupa" id="step-system-${s.id}" />
+        </div>
+        <div class="form-group">
+          <label>Details / Tips</label>
+          <input placeholder="Any specifics or context" id="step-details-${s.id}" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>⚠ Common Mistake or Warning (optional)</label>
+        <input placeholder="What went wrong for you or could go wrong?" id="step-warning-${s.id}" />
+      </div>`;
+    container.appendChild(div);
+  });
+  updateHint();
+}
+
+function addContact() {
+  const id = contactIdCounter++;
+  contacts.push({ id });
+  renderContacts();
+}
+
+function removeContact(id) {
+  contacts = contacts.filter(c => c.id !== id);
+  renderContacts();
+}
+
+function renderContacts() {
+  const container = document.getElementById('contacts-container');
+  container.innerHTML = '';
+  contacts.forEach(c => {
+    const div = document.createElement('div');
+    div.className = 'contacts-grid';
+    div.style.marginBottom = '10px';
+    div.innerHTML = `
+      <div class="form-group">
+        <label>Role</label>
+        <input placeholder="e.g. Finance Partner" id="c-role-${c.id}" />
+      </div>
+      <div class="form-group">
+        <label>Name</label>
+        <input placeholder="Name or TBD" id="c-name-${c.id}" />
+      </div>
+      <div class="form-group">
+        <label>Contact / Team</label>
+        <input placeholder="Email or Slack" id="c-contact-${c.id}" />
+      </div>
+      <button class="remove-btn" onclick="removeContact(${c.id})" style="margin-bottom:2px;">×</button>`;
+    container.appendChild(div);
+  });
+}
+
+function updateHint() {
+  const btn = document.getElementById('gen-btn');
+  const hint = document.getElementById('gen-hint');
+  if (mode === 'notes') {
+    const hasNotes = document.getElementById('raw-notes').value.trim().length > 30;
+    btn.disabled = !hasNotes;
+    hint.textContent = hasNotes ? '' : 'Paste your notes above to continue.';
+  } else {
+    const hasProcess = document.getElementById('f-process').value.trim();
+    const hasStep = steps.some(s => {
+      const el = document.getElementById(`step-action-${s.id}`);
+      return el && el.value.trim();
+    });
+    btn.disabled = !(hasProcess && hasStep);
+    hint.textContent = (hasProcess && hasStep) ? '' : 'Add a process name and at least one step to continue.';
+  }
+}
+
+function buildPrompt() {
+  if (mode === 'notes') {
+    const notes = document.getElementById('raw-notes').value;
+    return `You are an expert process documentation specialist. Convert the following raw process notes into a structured One Point Lesson (OPL).
+
+Raw notes:
+---
+${notes}
+---
+
+Return ONLY a valid JSON object with no markdown fences, no preamble, no explanation. Use exactly this structure:
+{"processName":"string","program":"string","department":"string","objective":"string","frequency":"string","steps":[{"stepNumber":1,"action":"string","system":"string","details":"string","warning":"string","screenshotPlaceholder":"string"}],"warnings":["string"],"contacts":[{"role":"string","name":"string","contact":"string"}]}`;
+  } else {
+    const processName = document.getElementById('f-process').value;
+    const program = document.getElementById('f-program').value;
+    const dept = document.getElementById('f-dept').value;
+    const freq = document.getElementById('f-freq').value;
+    const obj = document.getElementById('f-obj').value;
+    const stepsText = steps.map((s, i) => {
+      const action = document.getElementById(`step-action-${s.id}`)?.value || '';
+      const system = document.getElementById(`step-system-${s.id}`)?.value || '';
+      const details = document.getElementById(`step-details-${s.id}`)?.value || '';
+      const warning = document.getElementById(`step-warning-${s.id}`)?.value || '';
+      return `Step ${i+1}: Action="${action}" | System="${system}" | Details="${details}" | Warning="${warning}"`;
+    }).filter(l => !l.includes('Action=""')).join('\n');
+    const contactsText = contacts.map(c => {
+      const role = document.getElementById(`c-role-${c.id}`)?.value || '';
+      const name = document.getElementById(`c-name-${c.id}`)?.value || '';
+      const contact = document.getElementById(`c-contact-${c.id}`)?.value || '';
+      return `${role}: ${name} (${contact})`;
+    }).filter(l => l !== ': ()').join(', ');
+
+    return `Structure this process info into a clean One Point Lesson. Return ONLY a valid JSON object with no markdown fences.
+
+Process: ${processName} | Program: ${program} | Department: ${dept} | Frequency: ${freq} | Objective: ${obj}
+Steps: ${stepsText}
+Contacts: ${contactsText}
+
+Use exactly this JSON structure:
+{"processName":"${processName}","program":"${program}","department":"${dept}","objective":"${obj || 'Complete this process accurately and on time.'}","frequency":"${freq}","steps":[{"stepNumber":1,"action":"string","system":"string","details":"string","warning":"string","screenshotPlaceholder":"string"}],"warnings":["string"],"contacts":[{"role":"string","name":"string","contact":"string"}]}`;
+  }
+}
+
+async function generate() {
+  const btn = document.getElementById('gen-btn');
+  const errorBox = document.getElementById('error-box');
+  const previewCard = document.getElementById('preview-card');
+  errorBox.classList.add('hidden');
+  previewCard.classList.add('hidden');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Generating your OPL...';
+
+  try {
+    // Calls the Netlify function instead of Anthropic directly
+    const res = await fetch('/.netlify/functions/claude', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 4000,
+        messages: [{ role: 'user', content: buildPrompt() }]
+      })
+    });
+    const data = await res.json();
+    const text = (data.content || []).map(b => b.text || '').join('');
+    const clean = text.replace(/```json|```/g, '').trim();
+    currentOpl = JSON.parse(clean);
+    renderPreview(currentOpl);
+    previewCard.classList.remove('hidden');
+    previewCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch(e) {
+    errorBox.textContent = 'Something went wrong generating the OPL. Please try again. (' + e.message + ')';
+    errorBox.classList.remove('hidden');
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '⚡ Generate One Point Lesson';
+  updateHint();
+}
+
+function renderPreview(opl) {
+  const body = document.getElementById('preview-body');
+  const meta = [opl.program && `📁 ${opl.program}`, opl.department && `🏢 ${opl.department}`, opl.frequency && `🔄 ${opl.frequency}`].filter(Boolean).join('&nbsp;&nbsp;·&nbsp;&nbsp;');
+
+  let stepsHtml = (opl.steps || []).map((s, i) => `
+    <div class="opl-step">
+      <div class="opl-step-num">${i+1}</div>
+      <div style="flex:1;">
+        <div class="opl-step-action">${s.action}</div>
+        ${s.system ? `<span class="opl-step-system">${s.system}</span>` : ''}
+        ${s.details ? `<div class="opl-step-detail">${s.details}</div>` : ''}
+        ${s.warning ? `<div class="warning-inline">⚠ ${s.warning}</div>` : ''}
+        <div class="screenshot-box">📷 ${s.screenshotPlaceholder || 'Screenshot placeholder'}</div>
+      </div>
+    </div>`).join('');
+
+  let warningsHtml = (opl.warnings || []).filter(Boolean).map(w => `<div class="warning-box">⚠ ${w}</div>`).join('');
+  let contactsHtml = (opl.contacts || []).filter(c => c.role).map(c => `<tr><td>${c.role}</td><td>${c.name || '—'}</td><td>${c.contact || '—'}</td></tr>`).join('');
+
+  body.innerHTML = `
+    <div class="opl-title">${opl.processName}</div>
+    <div class="opl-meta">${meta}</div>
+    ${opl.objective ? `<div class="opl-section"><div class="opl-section-title">Objective</div><p style="font-size:14px;color:#374151;line-height:1.6;">${opl.objective}</p></div>` : ''}
+    <div class="opl-section"><div class="opl-section-title">Step-by-Step Instructions (${(opl.steps||[]).length} steps)</div>${stepsHtml}</div>
+    ${warningsHtml ? `<div class="opl-section"><div class="opl-section-title">Common Mistakes &amp; Warnings</div>${warningsHtml}</div>` : ''}
+    ${contactsHtml ? `<div class="opl-section"><div class="opl-section-title">Who to Contact If Stuck</div><table class="contact-table"><thead><tr><th>Role</th><th>Name</th><th>Contact</th></tr></thead><tbody>${contactsHtml}</tbody></table></div>` : ''}
+  `;
+}
+
+async function downloadDocx() {
+  if (!currentOpl || !window.docx) return;
+  const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
+          AlignmentType, BorderStyle, WidthType, ShadingType, LevelFormat } = window.docx;
+
+  const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  const opl = currentOpl;
+  const border = { style: BorderStyle.SINGLE, size: 1, color: 'CCCCCC' };
+  const borders = { top: border, bottom: border, left: border, right: border };
+  const noBorder = { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' };
+  const noBorders = { top: noBorder, bottom: noBorder, left: noBorder, right: noBorder };
+
+  const p = (text, opts = {}) => new Paragraph({
+    alignment: opts.center ? AlignmentType.CENTER : AlignmentType.LEFT,
+    spacing: opts.spacing || {},
+    children: [new TextRun({ text: text || '', font: 'Arial', size: opts.size || 22, color: opts.color || '374151', bold: opts.bold || false, italics: opts.italic || false })]
+  });
+
+  const gap = () => [new Paragraph({ children: [new TextRun('')] })];
+
+  const secHeader = (title, color = '0064D2') => new Paragraph({
+    border: { bottom: { style: BorderStyle.SINGLE, size: 8, color } },
+    spacing: { before: 280, after: 140 },
+    children: [new TextRun({ text: title.toUpperCase(), bold: true, font: 'Arial', color, size: 20 })]
+  });
+
+  const metaTable = () => new Table({
+    width: { size: 9360, type: WidthType.DXA },
+    columnWidths: [2340, 2340, 2340, 2340],
+    rows: [new TableRow({ children: [
+      ...[['Program', opl.program], ['Department', opl.department], ['Frequency', opl.frequency], ['Created', today]].map(([label, val]) =>
+        new TableCell({ borders, shading: { fill: 'EBF3FF', type: ShadingType.CLEAR }, margins: { top: 80, bottom: 80, left: 120, right: 120 }, width: { size: 2340, type: WidthType.DXA },
+          children: [p(label, { bold: true, color: '0064D2', size: 18 }), p(val || '—')] })
+      )
+    ]})]
+  });
+
+  const stepTable = (step, i) => new Table({
+    width: { size: 9360, type: WidthType.DXA },
+    columnWidths: [400, 8960],
+    rows: [new TableRow({ children: [
+      new TableCell({ borders, shading: { fill: '0064D2', type: ShadingType.CLEAR }, margins: { top: 80, bottom: 80, left: 80, right: 80 }, width: { size: 400, type: WidthType.DXA }, verticalAlign: 'center',
+        children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: String(i + 1), bold: true, font: 'Arial', size: 28, color: 'FFFFFF' })] })] }),
+      new TableCell({ borders, shading: { fill: 'F9FAFB', type: ShadingType.CLEAR }, margins: { top: 100, bottom: 100, left: 160, right: 160 }, width: { size: 8960, type: WidthType.DXA },
+        children: [
+          p(step.action, { bold: true, size: 24, color: '0a0a0f' }),
+          ...(step.system ? [p('System: ' + step.system, { bold: true, color: '0064D2', size: 18, spacing: { before: 60 } })] : []),
+          ...(step.details ? [p(step.details, { color: '4B5563', spacing: { before: 80 } })] : []),
+          ...(step.warning ? [new Paragraph({ spacing: { before: 100 }, border: { left: { style: BorderStyle.SINGLE, size: 8, color: 'F59E0B' } }, indent: { left: 120 }, children: [new TextRun({ text: '⚠ ' + step.warning, font: 'Arial', size: 18, color: '92400E' })] })] : []),
+          new Paragraph({ spacing: { before: 100 }, children: [new TextRun({ text: '📷 Screenshot: ' + (step.screenshotPlaceholder || 'Add screenshot here'), font: 'Arial', size: 16, color: '9CA3AF', italics: true })] }),
+        ]
+      })
+    ]})]
+  });
+
+  const contactTable = () => {
+    const rows = (opl.contacts || []).filter(c => c.role);
+    if (!rows.length) return null;
+    return new Table({
+      width: { size: 9360, type: WidthType.DXA },
+      columnWidths: [3120, 3120, 3120],
+      rows: [
+        new TableRow({ children: ['ROLE','NAME','CONTACT'].map(h => new TableCell({ borders, shading: { fill: '0064D2', type: ShadingType.CLEAR }, margins: { top: 80, bottom: 80, left: 120, right: 120 }, width: { size: 3120, type: WidthType.DXA }, children: [new Paragraph({ children: [new TextRun({ text: h, bold: true, font: 'Arial', size: 18, color: 'FFFFFF' })] })] })) }),
+        ...rows.map((c, i) => new TableRow({ children: [c.role, c.name||'—', c.contact||'—'].map(val => new TableCell({ borders, shading: { fill: i%2===0?'FFFFFF':'F9FAFB', type: ShadingType.CLEAR }, margins: { top: 80, bottom: 80, left: 120, right: 120 }, width: { size: 3120, type: WidthType.DXA }, children: [p(val)] })) }))
+      ]
+    });
+  };
+
+  const ct = contactTable();
+  const children = [
+    new Table({ width: { size: 9360, type: WidthType.DXA }, columnWidths: [7200, 2160], rows: [new TableRow({ children: [
+      new TableCell({ borders: noBorders, margins: { top: 0, bottom: 0, left: 0, right: 0 }, width: { size: 7200, type: WidthType.DXA }, children: [
+        p('ONE POINT LESSON', { bold: true, color: '0064D2', size: 18 }),
+        new Paragraph({ children: [new TextRun({ text: opl.processName || 'Process', font: 'Arial', size: 40, bold: true, color: '0a0a0f' })] })
+      ]}),
+      new TableCell({ borders: noBorders, margins: { top: 0, bottom: 0, left: 0, right: 0 }, width: { size: 2160, type: WidthType.DXA }, verticalAlign: 'center', children: [
+        new Paragraph({ alignment: AlignmentType.RIGHT, children: [new TextRun({ text: 'eBay', font: 'Arial', size: 48, bold: true, color: 'E53238' })] })
+      ]})
+    ]})]
+    }),
+    new Paragraph({ border: { bottom: { style: BorderStyle.SINGLE, size: 12, color: 'F5AF02' } }, spacing: { after: 240 }, children: [] }),
+    metaTable(),
+    ...gap(),
+    secHeader('Objective', '0064D2'),
+    p(opl.objective || '—'),
+    ...gap(),
+    secHeader('Step-by-Step Instructions', '0064D2'),
+    ...(opl.steps || []).flatMap((s, i) => [stepTable(s, i), ...gap()]),
+    ...((opl.warnings||[]).filter(Boolean).length > 0 ? [
+      secHeader('Common Mistakes & Warnings', 'F59E0B'),
+      ...(opl.warnings||[]).filter(Boolean).map(w => new Paragraph({ spacing: { before: 60, after: 60 }, border: { left: { style: BorderStyle.SINGLE, size: 8, color: 'F59E0B' } }, indent: { left: 160 }, children: [new TextRun({ text: '⚠  ' + w, font: 'Arial', size: 20, color: '92400E' })] })),
+      ...gap(),
+    ] : []),
+    secHeader('Who to Contact If Stuck', '86B817'),
+    ...(ct ? [ct, ...gap()] : [p('No contacts listed.')]),
+    new Paragraph({ border: { top: { style: BorderStyle.SINGLE, size: 4, color: 'E5E7EB' } }, spacing: { before: 240 }, children: [new TextRun({ text: `Generated ${today}  ·  eBay Program Management  ·  This is a living document — update as the process evolves.`, font: 'Arial', size: 16, color: '9CA3AF', italics: true })] })
+  ];
+
+  const doc = new Document({
+    sections: [{ properties: { page: { size: { width: 12240, height: 15840 }, margin: { top: 1080, right: 1080, bottom: 1080, left: 1080 } } }, children }]
+  });
+
+  const buffer = await Packer.toBuffer(doc);
+  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `OPL_${(opl.processName||'Process').replace(/\s+/g,'_')}.docx`;
+  a.click(); URL.revokeObjectURL(url);
+}
+
+// Init
+addStep(); addStep(); addStep();
+addContact();
+document.getElementById('raw-notes').addEventListener('input', updateHint);
+document.getElementById('f-process').addEventListener('input', updateHint);
+</script>
+</body>
+</html>
